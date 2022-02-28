@@ -6,7 +6,7 @@ def main():
     top_num = int(input())
     print("Anagram size: ")
     ng_size = int(input())
-    with open('./data/input.txt', 'r') as f:
+    with open('data/input.txt', 'r') as f:
         text = f.read()
         ti = TextInfo(text)
         print(f"Median: {ti.get_median()}")
