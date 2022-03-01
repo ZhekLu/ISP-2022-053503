@@ -11,11 +11,11 @@ class TextInfo:
         self.text = text.lower()
 
     @property
-    def text(self):
+    def text(self) -> str:
         return self._text
 
     @text.setter
-    def text(self, value):
+    def text(self, value: str):
         self._text = value
 
         sentences = [i for i in re.split(r'[.!?;]', value) if i != '']
@@ -23,11 +23,11 @@ class TextInfo:
 
         self._words_num = [len(i) for i in self._sentences]
 
-    def get_mean(self):
-        return statistics.mean(self._words_num)
+    def get_mean(self) -> int:
+        return 0 if not len(self._words_num) else statistics.mean(self._words_num)
 
-    def get_median(self):
-        return statistics.median(self._words_num)
+    def get_median(self) -> int:
+        return 0 if not len(self._words_num) else statistics.median(self._words_num)
 
     def get_top_ngrams(self, top_size: int, ngram_size: int) -> list:
         c = Counter()
