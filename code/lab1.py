@@ -12,7 +12,7 @@ def main():
         ng_size = 3
         print(f"Set default values: top size = {top_num}; ng size = {ng_size}")
 
-    with open('../data/input.txt', 'r') as f:
+    with open('data/input.txt', 'r') as f:
         text = f.read()
         ti = TextInfo(text)
         print(f"Median: {ti.get_median()}")
