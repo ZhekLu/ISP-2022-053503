@@ -8,7 +8,7 @@ from typing import Callable, Iterable
 class Packer:
 
     @staticmethod
-    def pack(obj: object):
+    def pack(obj: object) -> object:
         if Packer.is_primitive(obj) or obj is None:
             return obj
         if Packer.is_function(obj):
@@ -52,7 +52,7 @@ class Packer:
 
     @staticmethod
     def is_iterable(obj: object) -> bool:
-        return getattr(obj, "__iter__", None)
+        return getattr(obj, "__iter__", None) and not isinstance(obj, str)
 
     @staticmethod
     def is_function(obj: object) -> bool:
@@ -90,20 +90,24 @@ class Packer:
                 continue
             if isinstance(value, bytes):
                 value = list(value)
-            if Packer.is_iterable(value) and not isinstance(value, str):
-                value = [Packer.pack(v) for v in value]
-            args[arg] = value
+            # if Packer.is_iterable(value):
+            #     value = [Packer.pack(v) for v in value]
+            args[arg] = Packer.pack(value)
 
         packed["__code__"] = args
 
         return packed
 
     @staticmethod
-    def pack_nested(func):
-        pass
+    def pack_nested(code):
+        print("pack:code")
+        # f = FunctionType(code, globals={})
+        # return Packer.pack_function(f)
+        # TODO! closure for nested functions????
+        return code
 
     @staticmethod
-    def pack_class(cl):
+    def pack_class(cl: object):
         pass
 
     iterables = (list, tuple, set,)
@@ -124,8 +128,55 @@ class Packer:
     # Unpackers
 
     @staticmethod
-    def unpack_function(source):
-        pass
+    def unpack_function(source: dict):
+        args = source["__code__"]
+        global_values = source["__globals__"]
+        # TODO! builtins?
+        for name in global_values.keys():
+            if name in args["co_names"]:
+                global_values[name] = Packer.unpack(global_values[name])
+            # TODO! beautify it.
+
+        consts = []
+        for const in args["co_consts"]:
+            unpacked = Packer.unpack(const)
+            consts.append(unpacked.__code__ if Packer.is_function(unpacked) else const)
+        args["co_consts"] = consts
+
+        # # TODO! do u need this?
+        # for key, value in args.items():
+        #     if Packer.is_iterable(value):
+        #         args[key] = list(value)
+        for arg in Packer.FUNC_ATTRS[2:]:
+            if not source[arg]:
+                source[arg] = []
+
+        code = CodeType(
+            args['co_argcount'],
+            args['co_posonlyargcount'],
+            args['co_kwonlyargcount'],
+            args['co_nlocals'],
+            args['co_stacksize'],
+            args['co_flags'],
+            bytes(args['co_code']),
+            tuple(args['co_consts']),
+            tuple(args['co_names']),
+            tuple(args['co_varnames']),
+            args['co_filename'],
+            args['co_name'],
+            args['co_firstlineno'],
+            bytes(args['co_lnotab']),
+            tuple(args['co_freevars']),
+            tuple(args['co_cellvars']))
+
+        f = FunctionType(code=code, globals=global_values,
+                         argdefs=tuple(source['__defaults__']), closure=tuple(source['__closure__']))
+        f.__kwdefaults__ = dict(source['__kwdefaults__'])
+
+        return f
+
+
+
 
     @staticmethod
     def unpack_object(source):
