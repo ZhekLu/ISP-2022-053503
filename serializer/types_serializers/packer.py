@@ -5,8 +5,7 @@ from types import FunctionType, CodeType, LambdaType
 
 
 class Packer:
-    primitives = (int, str, bool, float,)
-
+    
     @staticmethod
     def pack(obj: object):
         if Packer.is_primitive(obj) or obj is None:
@@ -22,12 +21,29 @@ class Packer:
         return Packer.pack_object(obj)
 
     @staticmethod
-    def unpack():
-        pass
+    def unpack(source):
+        if Packer.is_primitive(source):
+            return source
+
+        if isinstance(source, dict):
+            if "function" in source.values():
+                return Packer.unpack_function(source)
+            if "object" in source.values():
+                return Packer.unpack_object(source)
+            if "class" in source.values():
+                return Packer.unpack_class(source)
+            return Packer.unpack_iterable(source)
+
+        if Packer.is_iterable(source):
+            return Packer.unpack_iterable(source)
+
+        return None
 
     # Additional methods
 
     # Checkers
+
+    primitives = (int, str, bool, float,)
 
     @staticmethod
     def is_primitive(obj: object) -> bool:
@@ -71,3 +87,20 @@ class Packer:
     def pack_object(obj):
         pass
 
+    # Unpackers
+
+    @staticmethod
+    def unpack_function(source):
+        pass
+
+    @staticmethod
+    def unpack_object(source):
+        pass
+
+    @staticmethod
+    def unpack_class(source):
+        pass
+
+    @staticmethod
+    def unpack_iterable(source):
+        pass
