@@ -9,7 +9,7 @@ class Packer:
 
     @staticmethod
     def pack(obj: object) -> object:
-        if Packer.is_primitive(obj) or obj is None:
+        if Packer.is_primitive(obj):
             return obj
         if Packer.is_function(obj):
             return Packer.pack_function(obj)
@@ -44,7 +44,7 @@ class Packer:
 
     # Checkers
 
-    primitives = (int, str, bool, float,)
+    primitives = (int, str, bool, float, type(None), )
 
     @staticmethod
     def is_primitive(obj: object) -> bool:
@@ -90,8 +90,6 @@ class Packer:
                 continue
             if isinstance(value, bytes):
                 value = list(value)
-            # if Packer.is_iterable(value):
-            #     value = [Packer.pack(v) for v in value]
             args[arg] = Packer.pack(value)
 
         packed["__code__"] = args
@@ -101,10 +99,10 @@ class Packer:
     @staticmethod
     def pack_nested(code):
         print("pack:code")
-        # f = FunctionType(code, globals={})
-        # return Packer.pack_function(f)
-        # TODO! closure for nested functions????
-        return code
+        f = FunctionType(code, globals={})
+        return Packer.pack_function(f)
+        # TODO! closure for nested functions???
+        # return code
 
     @staticmethod
     def pack_class(cl: object):

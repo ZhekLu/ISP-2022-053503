@@ -27,7 +27,7 @@ def foo_with_nested_foo(arg):
         return b + arg
     # print(foo.__closure__)
     return foo
-# print(foo_with_nested_foo.__code__.co_lnotab)
+
 
 def foo_with_vars(index):
     l = [1, 2, 3, 4]
@@ -35,6 +35,6 @@ def foo_with_vars(index):
 
 
 funcs = [simple_foo, foo_with_args, foo_with_def_args,
-         foo_with_glob, foo_with_glob_foo, foo_with_nested_foo, foo_with_vars]
+         foo_with_glob, foo_with_glob_foo, foo_with_vars]
 
 
