@@ -173,9 +173,6 @@ class Packer:
 
         return f
 
-
-
-
     @staticmethod
     def unpack_object(source):
         pass

@@ -73,7 +73,7 @@ class Json:
         if name:
             string = f'{name}: '
         string += '{'
-        len(obj)
+
         for i, (key, value) in enumerate(obj.items()):
             string += Json.str(value, Json.str(str(key)))
             if i < len(obj) - 1:
@@ -87,7 +87,7 @@ class Json:
     # From string
 
     @staticmethod
-    def object(obj: str, name='') -> object:
+    def object(obj: str) -> object:
         return eval(obj.replace('null', "None")) \
             if obj \
             else None
