@@ -1,5 +1,5 @@
 from types_serializers.packer import Packer
-
+import toml
 
 class Toml:
 
@@ -31,6 +31,9 @@ class Toml:
 
     @staticmethod
     def str(obj, name='', name_path='') -> str:
+        # s = toml.dumps(obj)
+        # d = toml.loads(s.replace('\\', '/'))
+        # return toml.dumps(obj)
         if Packer.is_primitive(obj):
             return Toml.str_primitive(obj, name)
         if isinstance(obj, dict):
@@ -74,10 +77,71 @@ class Toml:
         for key, value in obj.items():
             string += Toml.str(value, Toml.str(str(key)), name)
             string += '\n'
-        return string
+        return string + '\n'
 
     # From string
 
     @staticmethod
     def object(obj: str) -> object:
-        return None
+        if not obj:
+            return obj
+        if '=' in obj:
+            return Toml.object_dict(obj)
+        if '[' in obj:
+            return Toml.object_collection(obj)
+        return Toml.object_primitive(obj)
+
+    @staticmethod
+    def object_primitive(obj: str) -> object:
+        obj = obj.replace('null', 'None')
+        obj = obj.replace('\\', '/')
+        res = eval(obj)
+        if isinstance(res, str):
+            res = res.replace('/', '\\')
+        return res
+
+    @staticmethod
+    def object_collection(obj: str) -> object:
+        res = None
+        try:
+            return Toml.object_primitive(obj)
+        except:
+            res = obj.replace('[', '["')
+            res = res.replace(']', '"]')
+            res = res.replace(', ', '", "')
+        return Toml.object_primitive(res)
+
+    @staticmethod
+    def object_dict(obj: str) -> object:
+        parsed = {}
+
+        # check for other
+        other_start = obj.find('[')
+        if other_start != 0 and other_start != 1:
+            other_start = obj.find('\n[')
+            if other_start != -1:
+                other_start += 1
+        while obj and other_start != -1:
+            other_end = obj.find(']')
+            var_name = obj[other_start + 1:other_end]
+            other_start_in, other_end = other_end + 2, obj.find('\n\n')
+            parsed[var_name] = Toml.object_dict(obj[other_start_in:other_end])
+            if not parsed[var_name]:
+                other_end += 1
+            obj = obj[:other_start] + obj[other_end + 2:]
+            other_start = obj.find('\n[')
+            if other_start != -1:
+                other_start += 1
+
+        while obj:
+            index = obj.find('=')
+            if index == -1:
+                return parsed
+            var_name = obj[:index - 1]
+            obj = obj[index + 2:]
+            end_value = obj.find('\n')
+            if end_value == -1:
+                end_value = len(obj)
+            parsed[var_name] = Toml.object(obj[:end_value])
+            obj = obj[end_value + 1:]
+        return parsed
