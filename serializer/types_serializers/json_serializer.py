@@ -15,9 +15,19 @@ class Json:
             f.write(Json.dumps(obj))
 
     # Load methods
-    # TODO!
+
+    @staticmethod
+    def loads(s: str):
+        return Packer.unpack(Json.object(s))
+
+    @staticmethod
+    def load(file: str):
+        with open(file, 'r') as f:
+            return Json.loads(f.read())
 
     # Additional methods
+
+    # To string methods
 
     @staticmethod
     def str(obj, name='') -> str:
@@ -73,3 +83,11 @@ class Json:
     @staticmethod
     def str_class(obj, name) -> str:
         return "class object"
+
+    # From string
+
+    @staticmethod
+    def object(obj: str, name='') -> object:
+        return eval(obj.replace('null', "None")) \
+            if obj \
+            else None

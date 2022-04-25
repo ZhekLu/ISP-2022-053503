@@ -10,7 +10,7 @@ def foo_with_args(a, b):
 
 
 def foo_with_def_args(a, d, b=3, *args, c=None):
-    return a + b
+    return a + b + d
 
 
 def foo_with_glob(a):
