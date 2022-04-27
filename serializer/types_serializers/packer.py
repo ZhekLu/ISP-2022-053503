@@ -10,7 +10,7 @@ class Packer:
     @staticmethod
     def pack(obj: object) -> object:
         if Packer.is_primitive(obj):
-            return obj
+            return obj.replace('\\', '/') if isinstance(obj, str) else obj
         if Packer.is_function(obj):
             return Packer.pack_function(obj)
         if inspect.iscode(obj):
@@ -27,12 +27,16 @@ class Packer:
             return source
 
         if isinstance(source, dict):
-            if "function" in source.values():
-                return Packer.unpack_function(source)
-            if "object" in source.values():
-                return Packer.unpack_object(source)
-            if "class" in source.values():
-                return Packer.unpack_class(source)
+            if "__type__" in source.keys():
+                source_type = source["__type__"]
+                if source_type == "function":
+                    return Packer.unpack_function(source)
+                if source_type == "code":
+                    return Packer.unpack_nested(source)
+                if source_type == "object":
+                    return Packer.unpack_object(source)
+                if source_type == "class":
+                    return Packer.unpack_class(source)
             return Packer.unpack_iterable(source)
 
         if Packer.is_iterable(source):
@@ -97,18 +101,26 @@ class Packer:
         return packed
 
     @staticmethod
-    def pack_nested(code):
+    def pack_nested(code: CodeType):
         print("pack:code")
-        f = FunctionType(code, globals={})
-        return Packer.pack_function(f)
-        # TODO! closure for nested functions???
+        # f = FunctionType(code, globals={"__builtins__": __import__("builtins")}, closure=())
+        # return Packer.pack_function(f)
+
+        packed = {"__type__": "code"}
+        for key, value in inspect.getmembers(code):
+            if key.startswith("co"):
+                packed[key] = Packer.pack(value)
+        return packed
+
+        # TODO! closure for nested functions??? (it's ok)
         # return code
 
     @staticmethod
     def pack_class(cl: object):
+        print("class packer is needed")
         pass
 
-    iterables = (list, tuple, set,)
+    iterables = (list, tuple, set, bytes, )
 
     @staticmethod
     def pack_iterable(it: Iterable) -> Iterable:
@@ -126,7 +138,7 @@ class Packer:
     # Unpackers
 
     @staticmethod
-    def unpack_function(source: dict):
+    def unpack_function(source: dict) -> FunctionType:
         args = source["__code__"]
         global_values = source["__globals__"]
         # TODO! builtins?
@@ -134,6 +146,7 @@ class Packer:
             if name in args["co_names"]:
                 global_values[name] = Packer.unpack(global_values[name])
             # TODO! beautify it.
+        global_values["__builtins__"] = __import__("builtins")
 
         consts = []
         for const in args["co_consts"]:
@@ -141,10 +154,6 @@ class Packer:
             consts.append(unpacked.__code__ if Packer.is_function(unpacked) else const)
         args["co_consts"] = consts
 
-        # # TODO! do u need this?
-        # for key, value in args.items():
-        #     if Packer.is_iterable(value):
-        #         args[key] = list(value)
         for arg in Packer.FUNC_ATTRS[2:]:
             if not source[arg]:
                 source[arg] = []
@@ -166,21 +175,58 @@ class Packer:
             bytes(args['co_lnotab']),
             tuple(args['co_freevars']),
             tuple(args['co_cellvars']))
-
+        # TODO! too mach code
         f = FunctionType(code=code, globals=global_values,
                          argdefs=tuple(source['__defaults__']), closure=tuple(source['__closure__']))
         f.__kwdefaults__ = dict(source['__kwdefaults__'])
 
         return f
 
+    CODE_ITERS = ('co_code', 'co_consts', 'co_names', 'co_varnames', 'co_lnotab', 'co_freevars', 'co_cellvars')
+
     @staticmethod
-    def unpack_object(source):
+    def unpack_nested(source: dict) -> CodeType:
+        print("unpack:code")
+        code = {}
+        for key, value in source.items():
+            unpacked_value = Packer.unpack(value)
+            code[key] = unpacked_value
+            if key in Packer.CODE_ITERS and not unpacked_value:
+                code[key] = []
+
+        return CodeType(
+            code['co_argcount'],
+            code['co_posonlyargcount'],
+            code['co_kwonlyargcount'],
+            code['co_nlocals'],
+            code['co_stacksize'],
+            code['co_flags'],
+            bytes(code['co_code']),
+            tuple(code['co_consts']),
+            tuple(code['co_names']),
+            tuple(code['co_varnames']),
+            code['co_filename'],
+            code['co_name'],
+            code['co_firstlineno'],
+            bytes(code['co_lnotab']),
+            tuple(code['co_freevars']),
+            tuple(code['co_cellvars']))
+        # TODO! remove this duplicate
+        # return CodeType(**code)
+
+    @staticmethod
+    def unpack_object(source: dict):
         pass
 
     @staticmethod
-    def unpack_class(source):
+    def unpack_class(source: dict):
         pass
 
     @staticmethod
     def unpack_iterable(source):
-        pass
+        unpacked = None
+        if isinstance(source, Packer.iterables):
+            unpacked = [Packer.unpack(i) for i in source]
+        elif isinstance(source, dict):
+            unpacked = {key: Packer.unpack(value) for key, value in source.items()}
+        return unpacked

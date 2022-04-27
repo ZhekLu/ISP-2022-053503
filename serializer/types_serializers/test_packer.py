@@ -25,8 +25,13 @@ def foo_with_glob_foo(a):
 def foo_with_nested_foo(arg):
     def foo(b):
         return b + arg
-    # print(foo.__closure__)
-    return foo
+    return foo(12)
+
+
+def foo_with_nested():
+    def nested():
+        return 1
+    return nested()
 
 
 def foo_with_vars(index):

@@ -1,5 +1,4 @@
 from types_serializers.packer import Packer
-import toml
 
 class Toml:
 
@@ -93,12 +92,7 @@ class Toml:
 
     @staticmethod
     def object_primitive(obj: str) -> object:
-        obj = obj.replace('null', 'None')
-        obj = obj.replace('\\', '/')
-        res = eval(obj)
-        if isinstance(res, str):
-            res = res.replace('/', '\\')
-        return res
+        return eval(obj.replace('null', 'None'))
 
     @staticmethod
     def object_collection(obj: str) -> object:
