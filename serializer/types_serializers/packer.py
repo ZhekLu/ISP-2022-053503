@@ -3,13 +3,13 @@ import inspect
 import os
 import sys
 from types import FunctionType, CodeType, LambdaType, ModuleType
-from typing import Callable, Iterable
+from typing import Callable, Iterable, Any
 
 
 class Packer:
 
     @staticmethod
-    def pack(obj: object) -> object:
+    def pack(obj: Any) -> Any:
         if Packer.is_primitive(obj):
             return obj.replace('\\', '/') if isinstance(obj, str) else obj
         if Packer.is_function(obj):
@@ -25,7 +25,7 @@ class Packer:
         return Packer.pack_object(obj)
 
     @staticmethod
-    def unpack(source):
+    def unpack(source: Any) -> Any:
         if Packer.is_primitive(source):
             return source
 
@@ -47,8 +47,6 @@ class Packer:
         if Packer.is_iterable(source):
             return Packer.unpack_iterable(source)
 
-        return None
-
     # Additional methods
 
     # Checkers
@@ -56,15 +54,15 @@ class Packer:
     primitives = (int, str, bool, float, type(None),)
 
     @staticmethod
-    def is_primitive(obj: object) -> bool:
+    def is_primitive(obj: Any) -> bool:
         return isinstance(obj, Packer.primitives)
 
     @staticmethod
-    def is_iterable(obj: object) -> bool:
+    def is_iterable(obj: Any) -> bool:
         return getattr(obj, "__iter__", None) and not isinstance(obj, str)
 
     @staticmethod
-    def is_function(obj: object) -> bool:
+    def is_function(obj: Any) -> bool:
         return inspect.isfunction(obj) or inspect.ismethod(obj) or isinstance(obj, LambdaType)
 
     @staticmethod
@@ -78,36 +76,49 @@ class Packer:
                 'site-packages' not in module_path
         )
 
-    GLOB_VARS_CHECKER = (__builtins__, "__builtins__", "__cached__", "__file__")
+    # Getters
 
     @staticmethod
-    def get_global_vars(func) -> dict:
+    def get_global_vars(func: FunctionType) -> dict:
         globs = {}
         for global_var in func.__code__.co_names:
             if global_var in func.__globals__:
                 globs[global_var] = func.__globals__[global_var]
-        # for key, value in func.__globals__.items():
-        #     if key in Packer.GLOB_VARS_CHECKER or key == func.__name__:
-        #         continue
-        #     elif inspect.isclass(value):
-        #         global_value = "CLASS"
-        #     else:
-        #         global_value = value
-        #
-        #     if global_value:
-        #         globs[key] = global_value
         return globs
+
+    CODE_ITERS = ('co_code', 'co_consts', 'co_names', 'co_varnames', 'co_lnotab', 'co_freevars', 'co_cellvars')
+
+    @staticmethod
+    def get_code(args: dict) -> CodeType:
+
+        for key, value in args.items():
+            if key in Packer.CODE_ITERS and not value:
+                args[key] = []
+
+        return CodeType(
+            args['co_argcount'],
+            args['co_posonlyargcount'],
+            args['co_kwonlyargcount'],
+            args['co_nlocals'],
+            args['co_stacksize'],
+            args['co_flags'],
+            bytes(args['co_code']),
+            tuple(args['co_consts']),
+            tuple(args['co_names']),
+            tuple(args['co_varnames']),
+            args['co_filename'],
+            args['co_name'],
+            args['co_firstlineno'],
+            bytes(args['co_lnotab']),
+            tuple(args['co_freevars']),
+            tuple(args['co_cellvars']))
 
     # Packers
 
     FUNC_ATTRS = ["__globals__", "__defaults__", "__kwdefaults__", "__closure__"]
 
     @staticmethod
-    def pack_function(func: Callable) -> dict:
-        if inspect.ismethod(func):
-            print("func:method")
-            func = func.__func__  # TODO?
-
+    def pack_function(func: FunctionType) -> dict:
         packed = {"__type__": "function", "__name__": func.__name__}
         for attribute in Packer.FUNC_ATTRS:
             check = Packer.get_global_vars(func)
@@ -132,16 +143,13 @@ class Packer:
     @staticmethod
     def pack_nested(code: CodeType):
         print("pack:code")
-        # f = FunctionType(code, globals={"__builtins__": __import__("builtins")}, closure=())
-        # return Packer.pack_function(f)
-
         packed = {"__type__": "code"}
+
         for key, value in inspect.getmembers(code):
             if key.startswith("co"):
                 packed[key] = Packer.pack(value)
         return packed
         # TODO! closure for nested functions??? (it's ok)
-        # return code
 
     @staticmethod
     def pack_module(module: ModuleType):
@@ -175,15 +183,11 @@ class Packer:
         if isinstance(it, Packer.iterables):
             packed = [Packer.pack(value) for value in it]
         elif isinstance(it, dict):
-            # packed = {key: Packer.pack(value) for key, value in it.items()}
-            packed = {}
-            for key, value in it.items():
-                packed[key] = Packer.pack(value)
+            packed = {key: Packer.pack(value) for key, value in it.items()}
         return packed
 
     @staticmethod
     def pack_object(obj: object) -> dict:
-        print("pack:object todo ", obj)
         packed = {"__type__": "object", "__class__": obj.__class__.__name__}
         for attr in dir(obj):
             if not attr.startswith("__"):
@@ -195,13 +199,13 @@ class Packer:
 
     @staticmethod
     def unpack_function(source: dict) -> FunctionType:
-        args = source["__code__"]
+        args = Packer.unpack(source["__code__"])
         global_values = source["__globals__"]
-        # TODO! builtins?
+
         for name in global_values.keys():
             if name in args["co_names"]:
                 global_values[name] = Packer.unpack(global_values[name])
-            # TODO! beautify it.
+
         global_values["__builtins__"] = __import__("builtins")
 
         consts = []
@@ -214,31 +218,12 @@ class Packer:
             if not source[arg]:
                 source[arg] = []
 
-        code = CodeType(
-            args['co_argcount'],
-            args['co_posonlyargcount'],
-            args['co_kwonlyargcount'],
-            args['co_nlocals'],
-            args['co_stacksize'],
-            args['co_flags'],
-            bytes(args['co_code']),
-            tuple(args['co_consts']),
-            tuple(args['co_names']),
-            tuple(args['co_varnames']),
-            args['co_filename'],
-            args['co_name'],
-            args['co_firstlineno'],
-            bytes(args['co_lnotab']),
-            tuple(args['co_freevars']),
-            tuple(args['co_cellvars']))
-        # TODO! too mach code
+        code = Packer.get_code(args)
         f = FunctionType(code=code, globals=global_values,
                          argdefs=tuple(source['__defaults__']), closure=tuple(source['__closure__']))
         f.__kwdefaults__ = dict(source['__kwdefaults__'])
 
         return f
-
-    CODE_ITERS = ('co_code', 'co_consts', 'co_names', 'co_varnames', 'co_lnotab', 'co_freevars', 'co_cellvars')
 
     @staticmethod
     def unpack_nested(source: dict) -> CodeType:
@@ -247,32 +232,11 @@ class Packer:
         for key, value in source.items():
             unpacked_value = Packer.unpack(value)
             code[key] = unpacked_value
-            if key in Packer.CODE_ITERS and not unpacked_value:
-                code[key] = []
 
-        return CodeType(
-            code['co_argcount'],
-            code['co_posonlyargcount'],
-            code['co_kwonlyargcount'],
-            code['co_nlocals'],
-            code['co_stacksize'],
-            code['co_flags'],
-            bytes(code['co_code']),
-            tuple(code['co_consts']),
-            tuple(code['co_names']),
-            tuple(code['co_varnames']),
-            code['co_filename'],
-            code['co_name'],
-            code['co_firstlineno'],
-            bytes(code['co_lnotab']),
-            tuple(code['co_freevars']),
-            tuple(code['co_cellvars']))
-        # TODO! remove this duplicate
-        # return CodeType(**code)
+        return Packer.get_code(code)
 
     @staticmethod
     def unpack_module(source: dict):
-        print("unpack:module")
         if "__content__" not in source:
             return __import__(source["__name__"])
 
@@ -283,7 +247,12 @@ class Packer:
 
     @staticmethod
     def unpack_object(source: dict):
-        pass
+        meta = type(source['__class__'], (), {})
+        unpacked = meta()
+        for key, value in source.items():
+            if key != '__class__':
+                setattr(unpacked, key, Packer.unpack(value))
+        return unpacked
 
     @staticmethod
     def unpack_class(source: dict):
