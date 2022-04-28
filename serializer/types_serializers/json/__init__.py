@@ -1,13 +1,14 @@
+from types_serializers import ISerializer
 import packer
 
 
-class Json:
+class Json(ISerializer):
 
     # Dump methods
 
     @staticmethod
     def dumps(obj) -> str:
-        return Json.str(packer.pack(obj))
+        return Json._str(packer.pack(obj))
 
     @staticmethod
     def dump(obj, file):
@@ -18,7 +19,7 @@ class Json:
 
     @staticmethod
     def loads(s: str):
-        return packer.unpack(Json.object(s))
+        return packer.unpack(Json._object(s))
 
     @staticmethod
     def load(file: str):
@@ -30,17 +31,17 @@ class Json:
     # To string methods
 
     @staticmethod
-    def str(obj, name='') -> str:
-        if packer._is_primitive(obj):
-            return Json.str_primitive(obj, name)
-        if packer._is_iterable(obj):
-            return Json.str_dict(obj, name) \
+    def _str(obj, name='') -> str:
+        if packer.is_primitive(obj):
+            return Json._str_primitive(obj, name)
+        if packer.is_iterable(obj):
+            return Json._str_dict(obj, name) \
                 if isinstance(obj, dict) \
-                else Json.str_collection(obj, name)
-        return Json.str_class(obj, name)
+                else Json._str_collection(obj, name)
+        return Json._str_class(obj, name)
 
     @staticmethod
-    def str_primitive(obj, name) -> str:
+    def _str_primitive(obj, name) -> _str:
         string = ''
         if name:
             string = f'{name}: '
@@ -55,39 +56,39 @@ class Json:
         return string
 
     @staticmethod
-    def str_collection(obj, name) -> str:
+    def _str_collection(obj, name) -> _str:
         string = ''
         if name:
             string = f'{name}: '
         string += '['
         # string += f'["__{type(obj).__name__}__", '
         for i in range(len(obj)):
-            string += Json.str(obj[i])
+            string += Json._str(obj[i])
             if i < len(obj) - 1:
                 string += ', '
         return string + ']'
 
     @staticmethod
-    def str_dict(obj: dict, name) -> str:
+    def _str_dict(obj: dict, name) -> _str:
         string = ''
         if name:
             string = f'{name}: '
         string += '{'
 
         for i, (key, value) in enumerate(obj.items()):
-            string += Json.str(value, Json.str(str(key)))
+            string += Json._str(value, Json._str(str(key)))
             if i < len(obj) - 1:
                 string += ', '
         return string + '}'
 
     @staticmethod
-    def str_class(obj, name) -> str:
+    def _str_class(obj, name) -> _str:
         return "class object"
 
     # From string
 
     @staticmethod
-    def object(obj: str) -> object:
+    def _object(obj: _str) -> object:
         return eval(obj.replace('null', "None")) \
             if obj \
             else None

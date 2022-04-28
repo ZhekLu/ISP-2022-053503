@@ -1,3 +1,4 @@
+from types_serializers import ISerializer
 from yaml import load, dump, SafeLoader
 import packer
 
@@ -8,7 +9,7 @@ class Yaml:
 
     @staticmethod
     def dumps(obj) -> str:
-        return Yaml.str(packer.pack(obj))
+        return Yaml._str(packer.pack(obj))
 
     @staticmethod
     def dump(obj, file):
@@ -19,7 +20,7 @@ class Yaml:
 
     @staticmethod
     def loads(s: str):
-        return packer.unpack(Yaml.object(s))
+        return packer.unpack(Yaml._object(s))
 
     @staticmethod
     def load(file: str):
@@ -31,11 +32,11 @@ class Yaml:
     # To string methods
 
     @staticmethod
-    def str(obj) -> str:
+    def _str(obj) -> str:
         return dump(obj)
 
     # From string
 
     @staticmethod
-    def object(obj: str) -> object:
+    def _object(obj: _str) -> object:
         return load(obj, SafeLoader)

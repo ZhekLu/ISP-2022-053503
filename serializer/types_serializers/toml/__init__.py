@@ -1,13 +1,14 @@
+from types_serializers import ISerializer
 import packer
 
 
-class Toml:
+class Toml(ISerializer):
 
     # Dump methods
 
     @staticmethod
     def dumps(obj) -> str:
-        return Toml.str(packer.pack(obj))
+        return Toml._str(packer.pack(obj))
 
     @staticmethod
     def dump(obj, file):
@@ -18,7 +19,7 @@ class Toml:
 
     @staticmethod
     def loads(s: str):
-        return packer.unpack(Toml.object(s))
+        return packer.unpack(Toml._object(s))
 
     @staticmethod
     def load(file: str):
@@ -30,19 +31,19 @@ class Toml:
     # To string methods
 
     @staticmethod
-    def str(obj, name='', name_path='') -> str:
+    def _str(obj, name='', name_path='') -> str:
         # s = toml.dumps(obj)
         # d = toml.loads(s.replace('\\', '/'))
         # return toml.dumps(obj)
-        if packer._is_primitive(obj):
-            return Toml.str_primitive(obj, name)
+        if packer.is_primitive(obj):
+            return Toml._str_primitive(obj, name)
         if isinstance(obj, dict):
-            return Toml.str_dict(obj, name, name_path)
-        if packer._is_iterable(obj):
-            return Toml.str_collection(obj, name)
+            return Toml._str_dict(obj, name, name_path)
+        if packer.is_iterable(obj):
+            return Toml._str_collection(obj, name)
 
     @staticmethod
-    def str_primitive(obj, name) -> str:
+    def _str_primitive(obj, name) -> _str:
         string = ''
         if name:
             string = f'{name} = '
@@ -57,57 +58,57 @@ class Toml:
         return string
 
     @staticmethod
-    def str_collection(obj, name) -> str:
+    def _str_collection(obj, name) -> _str:
         string = ''
         if name:
             string = f'{name} = '
         string += '['
         for i in range(len(obj)):
-            string += Toml.str(obj[i])
+            string += Toml._str(obj[i])
             if i < len(obj) - 1:
                 string += ', '
         return string + ']'
 
     @staticmethod
-    def str_dict(obj: dict, name: str, name_path: str) -> str:
+    def _str_dict(obj: dict, name: _str, name_path: _str) -> _str:
         string = ''
         if name:
             string = f'[{name}]\n'
 
         for key, value in obj.items():
-            string += Toml.str(value, Toml.str(str(key)), name)
+            string += Toml._str(value, Toml._str(str(key)), name)
             string += '\n'
         return string + '\n'
 
     # From string
 
     @staticmethod
-    def object(obj: str) -> object:
+    def _object(obj: _str) -> object:
         if not obj:
             return obj
         if '=' in obj:
-            return Toml.object_dict(obj)
+            return Toml._object_dict(obj)
         if '[' in obj:
-            return Toml.object_collection(obj)
-        return Toml.object_primitive(obj)
+            return Toml._object_collection(obj)
+        return Toml._object_primitive(obj)
 
     @staticmethod
-    def object_primitive(obj: str) -> object:
+    def _object_primitive(obj: _str) -> _object:
         return eval(obj.replace('null', 'None'))
 
     @staticmethod
-    def object_collection(obj: str) -> object:
+    def _object_collection(obj: _str) -> _object:
         res = None
         try:
-            return Toml.object_primitive(obj)
+            return Toml._object_primitive(obj)
         except:
             res = obj.replace('[', '["')
             res = res.replace(']', '"]')
             res = res.replace(', ', '", "')
-        return Toml.object_primitive(res)
+        return Toml._object_primitive(res)
 
     @staticmethod
-    def object_dict(obj: str) -> object:
+    def _object_dict(obj: _str) -> _object:
         parsed = {}
 
         # check for other
@@ -120,7 +121,7 @@ class Toml:
             other_end = obj.find(']')
             var_name = obj[other_start + 1:other_end]
             other_start_in, other_end = other_end + 2, obj.find('\n\n')
-            parsed[var_name] = Toml.object_dict(obj[other_start_in:other_end])
+            parsed[var_name] = Toml._object_dict(obj[other_start_in:other_end])
             if not parsed[var_name]:
                 other_end += 1
             obj = obj[:other_start] + obj[other_end + 2:]
@@ -137,6 +138,6 @@ class Toml:
             end_value = obj.find('\n')
             if end_value == -1:
                 end_value = len(obj)
-            parsed[var_name] = Toml.object(obj[:end_value])
+            parsed[var_name] = Toml._object(obj[:end_value])
             obj = obj[end_value + 1:]
         return parsed
