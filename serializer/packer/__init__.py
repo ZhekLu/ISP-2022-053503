@@ -141,7 +141,6 @@ def _pack_function(func: FunctionType) -> dict:
 
 
 def _pack_nested(code: CodeType):
-    print("pack:code")
     packed = {"__type__": "code"}
 
     for key, value in inspect.getmembers(code):
@@ -152,7 +151,6 @@ def _pack_nested(code: CodeType):
 
 
 def _pack_module(module: ModuleType):
-    print("pack:module")
     packed = {"__type__": "module", "__name__": module.__name__}
     if is_std_lib_module(module):
         return packed
@@ -227,7 +225,6 @@ def _unpack_function(source: dict) -> FunctionType:
 
 
 def _unpack_nested(source: dict) -> CodeType:
-    print("unpack:code")
     code = {}
     for key, value in source.items():
         unpacked_value = unpack(value)
