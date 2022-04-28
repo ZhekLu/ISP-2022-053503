@@ -7,9 +7,9 @@ import sys
 
 
 def pack(obj: Any) -> Any:
-    if _is_primitive(obj):
+    if is_primitive(obj):
         return obj.replace('\\', '/') if isinstance(obj, str) else obj
-    if _is_function(obj):
+    if is_function(obj):
         return _pack_function(obj)
     if inspect.iscode(obj):
         return _pack_nested(obj)
@@ -17,13 +17,13 @@ def pack(obj: Any) -> Any:
         return _pack_module(obj)
     if inspect.isclass(obj):
         return _pack_class(obj)
-    if _is_iterable(obj):
+    if is_iterable(obj):
         return _pack_iterable(obj)
     return _pack_object(obj)
 
 
 def unpack(source: Any) -> Any:
-    if _is_primitive(source):
+    if is_primitive(source):
         return source
 
     if isinstance(source, dict):
@@ -41,29 +41,30 @@ def unpack(source: Any) -> Any:
                 return _unpack_class(source)
         return _unpack_iterable(source)
 
-    if _is_iterable(source):
+    if is_iterable(source):
         return _unpack_iterable(source)
 
 # Additional methods
 
 # Checkers
 
-primitives = (int, str, bool, float, type(None),)
+
+_primitives = (int, str, bool, float, type(None),)
 
 
-def _is_primitive(obj: Any) -> bool:
-    return isinstance(obj, primitives)
+def is_primitive(obj: Any) -> bool:
+    return isinstance(obj, _primitives)
 
 
-def _is_iterable(obj: Any) -> bool:
+def is_iterable(obj: Any) -> bool:
     return getattr(obj, "__iter__", None) and not isinstance(obj, str)
 
 
-def _is_function(obj: Any) -> bool:
+def is_function(obj: Any) -> bool:
     return inspect.isfunction(obj) or inspect.ismethod(obj) or isinstance(obj, LambdaType)
 
 
-def _is_std_lib_module(module: ModuleType) -> bool:
+def is_std_lib_module(module: ModuleType) -> bool:
     python_path = os.path.dirname(sys.executable)
     module_path = importlib.util.find_spec(module.__name__).origin
     return (
@@ -153,7 +154,7 @@ def _pack_nested(code: CodeType):
 def _pack_module(module: ModuleType):
     print("pack:module")
     packed = {"__type__": "module", "__name__": module.__name__}
-    if _is_std_lib_module(module):
+    if is_std_lib_module(module):
         return packed
 
     packed["__content__"] = {}
@@ -210,7 +211,7 @@ def _unpack_function(source: dict) -> FunctionType:
     consts = []
     for const in args["co_consts"]:
         unpacked = unpack(const)
-        consts.append(unpacked.__code__ if _is_function(unpacked) else const)
+        consts.append(unpacked.__code__ if is_function(unpacked) else const)
     args["co_consts"] = consts
 
     for arg in _FUNC_ATTRS[1:]:
