@@ -11,3 +11,4 @@ def get_serializer(format_type: str) -> ISerializer:
         return Toml
     if format_type == 'yaml':
         return Yaml
+    raise TypeError(f'Unknown format type {format_type}')

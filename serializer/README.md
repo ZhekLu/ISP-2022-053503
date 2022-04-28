@@ -1,4 +1,21 @@
-## Attributes
+# About Serializer
+```
+usage: serializer.py [-h] [-s SOURCE] [-f FORMAT] [-r RESULT_FILE]
+
+options:
+  -h, --help            Show this help message and exit
+  -s SOURCE, --source   Path to source file
+  -f FORMAT, --format   Final format: json, toml or yaml
+  -r RESULT_FILE, --result-file
+                        Path to file to save result.
+```
+
+Usage example
+```
+python serializer.py -r test_res.yaml -s test.json -f yaml
+```
+
+## Attributes Info
 - **co_names** is a tuple of global variable names
 - **co_varnames** is a tuple of local variable names (and argument names).
 - **co_consts** contains (None, ..) as it default return value for a function. 
