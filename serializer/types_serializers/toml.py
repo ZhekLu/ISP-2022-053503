@@ -1,4 +1,5 @@
-from types_serializers.packer import Packer
+import packer
+
 
 class Toml:
 
@@ -6,7 +7,7 @@ class Toml:
 
     @staticmethod
     def dumps(obj) -> str:
-        return Toml.str(Packer.pack(obj))
+        return Toml.str(packer.pack(obj))
 
     @staticmethod
     def dump(obj, file):
@@ -17,7 +18,7 @@ class Toml:
 
     @staticmethod
     def loads(s: str):
-        return Packer.unpack(Toml.object(s))
+        return packer.unpack(Toml.object(s))
 
     @staticmethod
     def load(file: str):
@@ -33,11 +34,11 @@ class Toml:
         # s = toml.dumps(obj)
         # d = toml.loads(s.replace('\\', '/'))
         # return toml.dumps(obj)
-        if Packer.is_primitive(obj):
+        if packer._is_primitive(obj):
             return Toml.str_primitive(obj, name)
         if isinstance(obj, dict):
             return Toml.str_dict(obj, name, name_path)
-        if Packer.is_iterable(obj):
+        if packer._is_iterable(obj):
             return Toml.str_collection(obj, name)
 
     @staticmethod

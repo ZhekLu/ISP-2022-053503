@@ -1,4 +1,4 @@
-from types_serializers.packer import Packer
+import packer
 
 
 class Json:
@@ -7,7 +7,7 @@ class Json:
 
     @staticmethod
     def dumps(obj) -> str:
-        return Json.str(Packer.pack(obj))
+        return Json.str(packer.pack(obj))
 
     @staticmethod
     def dump(obj, file):
@@ -18,7 +18,7 @@ class Json:
 
     @staticmethod
     def loads(s: str):
-        return Packer.unpack(Json.object(s))
+        return packer.unpack(Json.object(s))
 
     @staticmethod
     def load(file: str):
@@ -31,9 +31,9 @@ class Json:
 
     @staticmethod
     def str(obj, name='') -> str:
-        if Packer.is_primitive(obj):
+        if packer._is_primitive(obj):
             return Json.str_primitive(obj, name)
-        if Packer.is_iterable(obj):
+        if packer._is_iterable(obj):
             return Json.str_dict(obj, name) \
                 if isinstance(obj, dict) \
                 else Json.str_collection(obj, name)
