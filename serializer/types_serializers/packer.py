@@ -1,9 +1,9 @@
+from types import FunctionType, CodeType, LambdaType, ModuleType
+from typing import Iterable, Any
 import importlib.util
 import inspect
 import os
 import sys
-from types import FunctionType, CodeType, LambdaType, ModuleType
-from typing import Callable, Iterable, Any
 
 
 class Packer:
@@ -121,7 +121,6 @@ class Packer:
     def pack_function(func: FunctionType) -> dict:
         packed = {"__type__": "function", "__name__": func.__name__}
         for attribute in Packer.FUNC_ATTRS:
-            check = Packer.get_global_vars(func)
             packed[attribute] = Packer.pack_iterable(
                 func.__getattribute__(attribute)
                 if attribute != "__globals__"
@@ -236,7 +235,7 @@ class Packer:
         return Packer.get_code(code)
 
     @staticmethod
-    def unpack_module(source: dict):
+    def unpack_module(source: dict) -> ModuleType:
         if "__content__" not in source:
             return __import__(source["__name__"])
 
@@ -246,7 +245,7 @@ class Packer:
         return module
 
     @staticmethod
-    def unpack_object(source: dict):
+    def unpack_object(source: dict) -> Any:
         meta = type(source['__class__'], (), {})
         unpacked = meta()
         for key, value in source.items():
@@ -255,12 +254,12 @@ class Packer:
         return unpacked
 
     @staticmethod
-    def unpack_class(source: dict):
+    def unpack_class(source: dict) -> type:
         unpacked = Packer.unpack_iterable(source)
         return type(source["__name__"], (), unpacked)
 
     @staticmethod
-    def unpack_iterable(source):
+    def unpack_iterable(source) -> Any:
         unpacked = None
         if isinstance(source, Packer.iterables):
             unpacked = [Packer.unpack(i) for i in source]
