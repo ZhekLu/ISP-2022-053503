@@ -43,3 +43,15 @@ funcs = [simple_foo, foo_with_args, foo_with_def_args,
          foo_with_glob, foo_with_glob_foo, foo_with_vars]
 
 
+class TestClass:
+    stat_var = 13
+
+    def __init__(self, a):
+        self.var = a
+
+    def __private_method(self):
+        self.var += 1
+
+    def method(self):
+        return 13 + self.var
+
