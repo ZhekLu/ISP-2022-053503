@@ -43,7 +43,7 @@ class Toml(ISerializer):
             return Toml._str_collection(obj, name)
 
     @staticmethod
-    def _str_primitive(obj, name) -> _str:
+    def _str_primitive(obj, name) -> str:
         string = ''
         if name:
             string = f'{name} = '
@@ -58,22 +58,24 @@ class Toml(ISerializer):
         return string
 
     @staticmethod
-    def _str_collection(obj, name) -> _str:
+    def _str_collection(obj, name: str) -> str:
         string = ''
         if name:
             string = f'{name} = '
         string += '['
         for i in range(len(obj)):
-            string += Toml._str(obj[i])
+            obj_str = Toml._str(obj[i])
+            string += str(f'"{obj_str}"') if isinstance(obj[i], str) else obj_str
             if i < len(obj) - 1:
                 string += ', '
         return string + ']'
 
     @staticmethod
-    def _str_dict(obj: dict, name: _str, name_path: _str) -> _str:
+    def _str_dict(obj: dict, name: str, name_path: str) -> str:
         string = ''
         if name:
-            string = f'[{name}]\n'
+            pre_name = f'{name_path}.' if name_path else ''
+            string = f'[{pre_name + name}]\n'
 
         for key, value in obj.items():
             string += Toml._str(value, Toml._str(str(key)), name)
@@ -83,7 +85,7 @@ class Toml(ISerializer):
     # From string
 
     @staticmethod
-    def _object(obj: _str) -> object:
+    def _object(obj: str) -> object:
         if not obj:
             return obj
         if '=' in obj:
@@ -93,22 +95,19 @@ class Toml(ISerializer):
         return Toml._object_primitive(obj)
 
     @staticmethod
-    def _object_primitive(obj: _str) -> _object:
-        return eval(obj.replace('null', 'None'))
-
-    @staticmethod
-    def _object_collection(obj: _str) -> _object:
-        res = None
+    def _object_primitive(obj: str) -> object:
+        obj = obj.replace('null', 'None').replace('true', 'True').replace('false', "False")
         try:
-            return Toml._object_primitive(obj)
-        except:
-            res = obj.replace('[', '["')
-            res = res.replace(']', '"]')
-            res = res.replace(', ', '", "')
-        return Toml._object_primitive(res)
+            return eval(obj)
+        except SyntaxError:
+            return eval(str(f'"{obj}"'))
 
     @staticmethod
-    def _object_dict(obj: _str) -> _object:
+    def _object_collection(obj: str) -> object:
+        return Toml._object_primitive(obj)
+
+    @staticmethod
+    def _object_dict(obj: str) -> object:
         parsed = {}
 
         # check for other

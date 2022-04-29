@@ -1,9 +1,9 @@
 from serializer.types_serializers import ISerializer
-from yaml import load, dump, SafeLoader
 import serializer.packer as packer
+import yaml
 
 
-class Yaml:
+class Yaml(ISerializer):
 
     # Dump methods
 
@@ -33,10 +33,10 @@ class Yaml:
 
     @staticmethod
     def _str(obj) -> str:
-        return dump(obj)
+        return yaml.dump(obj)
 
     # From string
 
     @staticmethod
     def _object(obj: _str) -> object:
-        return load(obj, SafeLoader)
+        return yaml.load(obj, yaml.SafeLoader)
