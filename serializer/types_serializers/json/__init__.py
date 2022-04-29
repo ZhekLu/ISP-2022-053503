@@ -1,5 +1,5 @@
-from types_serializers import ISerializer
-import packer
+from serializer.types_serializers import ISerializer
+import serializer.packer as packer
 
 
 class Json(ISerializer):
@@ -88,7 +88,11 @@ class Json(ISerializer):
     # From string
 
     @staticmethod
-    def _object(obj: _str) -> object:
-        return eval(obj.replace('null', "None")) \
+    def _process(obj: str) -> str:
+        return obj.replace('null', 'None').replace('true', 'True').replace('false', 'False')
+
+    @staticmethod
+    def _object(obj: str) -> object:
+        return eval(Json._process(obj)) \
             if obj \
             else None

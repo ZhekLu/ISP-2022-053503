@@ -27,7 +27,7 @@ class ComplexClass:
         self.name = 'ComplexClass'
 
     def func_with_glob(self):
-        return "local_str" + str_glob
+        return "local_str" + str_glob + str(self.const)
 
 
 class TestClass:

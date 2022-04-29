@@ -1,6 +1,6 @@
-from types_serializers import ISerializer
+from serializer.types_serializers import ISerializer
 from yaml import load, dump, SafeLoader
-import packer
+import serializer.packer as packer
 
 
 class Yaml:
