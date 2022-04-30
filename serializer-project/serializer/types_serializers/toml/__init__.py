@@ -33,9 +33,6 @@ class Toml(ISerializer):
 
     @staticmethod
     def _str(obj: Any, name: str = '', name_path: str = '') -> str:
-        # s = toml.dumps(obj)
-        # d = toml.loads(s.replace('\\', '/'))
-        # return toml.dumps(obj)
         if packer.is_primitive(obj):
             return Toml._str_primitive(obj, name)
         if isinstance(obj, dict):
