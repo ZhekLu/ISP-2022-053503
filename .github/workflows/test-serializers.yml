@@ -1,4 +1,4 @@
-name: Serializer Tests
+name: Serializer-Tests
 
 on:
   pull_request:
