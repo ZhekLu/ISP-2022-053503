@@ -1,5 +1,6 @@
 from serializer.types_serializers import ISerializer
 import serializer.packer as packer
+from typing import Any, Sequence
 
 
 class Toml(ISerializer):
@@ -7,22 +8,22 @@ class Toml(ISerializer):
     # Dump methods
 
     @staticmethod
-    def dumps(obj) -> str:
+    def dumps(obj: Any) -> str:
         return Toml._str(packer.pack(obj))
 
     @staticmethod
-    def dump(obj, file):
+    def dump(obj: Any, file: str) -> None:
         with open(file, 'w') as f:
             f.write(Toml.dumps(obj))
 
     # Load methods
 
     @staticmethod
-    def loads(s: str):
+    def loads(s: str) -> Any:
         return packer.unpack(Toml._object(s))
 
     @staticmethod
-    def load(file: str):
+    def load(file: str) -> Any:
         with open(file, 'r') as f:
             return Toml.loads(f.read())
 
@@ -31,7 +32,7 @@ class Toml(ISerializer):
     # To string methods
 
     @staticmethod
-    def _str(obj, name='', name_path='') -> str:
+    def _str(obj: Any, name: str = '', name_path: str = '') -> str:
         # s = toml.dumps(obj)
         # d = toml.loads(s.replace('\\', '/'))
         # return toml.dumps(obj)
@@ -43,7 +44,7 @@ class Toml(ISerializer):
             return Toml._str_collection(obj, name)
 
     @staticmethod
-    def _str_primitive(obj, name) -> str:
+    def _str_primitive(obj: object, name) -> str:
         string = ''
         if name:
             string = f'{name} = '
@@ -58,7 +59,7 @@ class Toml(ISerializer):
         return string
 
     @staticmethod
-    def _str_collection(obj, name: str) -> str:
+    def _str_collection(obj: Sequence, name: str) -> str:
         string = ''
         if name:
             string = f'{name} = '
@@ -88,10 +89,9 @@ class Toml(ISerializer):
 
     @staticmethod
     def _object_name(name: str) -> str:
-        index = name.find('.')
-        while index != -1:
+        index = name.rfind('.')
+        if index != -1:
             name = name[index + 1:]
-            index = name.find('.')
         return name
 
     @staticmethod
@@ -113,11 +113,11 @@ class Toml(ISerializer):
             return eval(str(f'"{obj}"'))
 
     @staticmethod
-    def _object_collection(obj: str) -> object:
+    def _object_collection(obj: str) -> Sequence:
         return Toml._object_primitive(obj)
 
     @staticmethod
-    def _object_dict(obj: str) -> object:
+    def _object_dict(obj: str) -> dict:
         parsed = {}
 
         # check for other
@@ -147,7 +147,6 @@ class Toml(ISerializer):
             other_end = other_end + 3 \
                 if other_end + 2 < len(obj) and obj[other_end + 2] == '\n' \
                 else other_end + 2
-            # obj = obj[:other_start] + obj[other_end + 2:]
             obj = obj[:other_start] + obj[other_end:]
             other_start = obj.find('\n[')
             if other_start != -1:

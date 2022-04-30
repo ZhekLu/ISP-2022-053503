@@ -1,5 +1,6 @@
 from serializer.types_serializers import ISerializer
 import serializer.packer as packer
+from typing import Any, Sequence
 
 
 class Json(ISerializer):
@@ -7,22 +8,22 @@ class Json(ISerializer):
     # Dump methods
 
     @staticmethod
-    def dumps(obj) -> str:
+    def dumps(obj: Any) -> str:
         return Json._str(packer.pack(obj))
 
     @staticmethod
-    def dump(obj, file):
+    def dump(obj: Any, file) -> None:
         with open(file, 'w') as f:
             f.write(Json.dumps(obj))
 
     # Load methods
 
     @staticmethod
-    def loads(s: str):
+    def loads(s: str) -> Any:
         return packer.unpack(Json._object(s))
 
     @staticmethod
-    def load(file: str):
+    def load(file: str) -> Any:
         with open(file, 'r') as f:
             return Json.loads(f.read())
 
@@ -31,17 +32,16 @@ class Json(ISerializer):
     # To string methods
 
     @staticmethod
-    def _str(obj, name='') -> str:
+    def _str(obj: Any, name: str = '') -> str:
         if packer.is_primitive(obj):
             return Json._str_primitive(obj, name)
         if packer.is_iterable(obj):
             return Json._str_dict(obj, name) \
                 if isinstance(obj, dict) \
                 else Json._str_collection(obj, name)
-        return Json._str_class(obj, name)
 
     @staticmethod
-    def _str_primitive(obj, name) -> _str:
+    def _str_primitive(obj: object, name: str) -> str:
         string = ''
         if name:
             string = f'{name}: '
@@ -56,7 +56,7 @@ class Json(ISerializer):
         return string
 
     @staticmethod
-    def _str_collection(obj, name) -> _str:
+    def _str_collection(obj: Sequence, name: str) -> str:
         string = ''
         if name:
             string = f'{name}: '
@@ -69,7 +69,7 @@ class Json(ISerializer):
         return string + ']'
 
     @staticmethod
-    def _str_dict(obj: dict, name) -> _str:
+    def _str_dict(obj: dict, name: str) -> str:
         string = ''
         if name:
             string = f'{name}: '
@@ -80,10 +80,6 @@ class Json(ISerializer):
             if i < len(obj) - 1:
                 string += ', '
         return string + '}'
-
-    @staticmethod
-    def _str_class(obj, name) -> _str:
-        return "class object"
 
     # From string
 

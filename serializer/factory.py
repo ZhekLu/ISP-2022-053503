@@ -8,7 +8,7 @@ YAML_STR = 'yaml'
 TOML_STR = 'toml'
 
 
-def get_serializer(format_type: str) -> ISerializer:
+def get_serializer(format_type: str) -> type(ISerializer):
     if format_type == 'json':
         return Json
     if format_type == 'toml':
@@ -16,4 +16,3 @@ def get_serializer(format_type: str) -> ISerializer:
     if format_type == 'yaml':
         return Yaml
     raise TypeError(f'Unknown format type {format_type}')
-    # TODO! why there's type warn?
