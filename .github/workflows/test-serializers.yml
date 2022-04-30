@@ -47,4 +47,4 @@ jobs:
         uses: codecov/codecov-action@v2
         with:
           token: ${{ env.CODECOV_TOKEN }}
-          files: ${{ env.working-directory }}\*
+          files: ./*.coverage
