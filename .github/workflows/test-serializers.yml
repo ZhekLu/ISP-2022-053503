@@ -40,9 +40,10 @@ jobs:
         run: |
           python -m unittest test.toml
       - name: Generate Report
-        uses: codecov/codecov-action@v2
-        with:
-          token: ${{ env.CODECOV_TOKEN }}
         working-directory: ${{ env.working-directory }}
         run: |
           coverage run -m unittest test.json test.yaml test.toml
+      - name: Upload
+        uses: codecov/codecov-action@v2
+        with:
+          token: ${{ env.CODECOV_TOKEN }}
