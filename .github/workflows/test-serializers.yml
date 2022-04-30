@@ -14,7 +14,7 @@ jobs:
         python-version: ['3.9.12']
     env:
       working-directory: ./serializer-project
-      codecov-token: ef5ee370-6104-4971-9197-e62702bf6231
+      CODECOV_TOKEN: ef5ee370-6104-4971-9197-e62702bf6231
 
     steps:
       - uses: actions/checkout@v2
@@ -45,3 +45,6 @@ jobs:
           coverage run -m unittest test.json test.yaml test.toml
       - name: Upload
         uses: codecov/codecov-action@v2
+        with:
+          token: ${{ env.CODECOV_TOKEN }}
+          files: ${{ env.working-directory }}\*
