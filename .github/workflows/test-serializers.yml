@@ -13,7 +13,7 @@ jobs:
       matrix:
         python-version: ['3.9.12']
     env:
-      working-directory: ./serializer
+      working-directory: ./serializer-project
       codecov-token: ef5ee370-6104-4971-9197-e62702bf6231
 
     steps:
