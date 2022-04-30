@@ -73,16 +73,16 @@ class Toml(ISerializer):
     @staticmethod
     def _str_dict(obj: dict, name: str, name_path: str) -> str:
         string = ''
+        full_name = f'{name_path}.{name}' if name_path else name
         if name:
-            pre_name = f'{name_path}.' if name_path else ''
-            string = f'[{pre_name + name}]\n'
+            string = f'[{full_name}]\n'
 
         for key, value in obj.items():
-            string += Toml._str(value, Toml._str(str(key)), name)
+            string += Toml._str(value, Toml._str(str(key)), full_name)
             string += '\n'
         if not name_path:
             string += '\n'
-        return string
+        return string + '\r'
 
     # From string
 
@@ -128,22 +128,27 @@ class Toml(ISerializer):
                 other_start += 1
         while obj and other_start != -1:
             other_end = other_start + obj[other_start:].find(']')
-            var_name = Toml._object_name(obj[other_start + 1:other_end])
+            full_name = obj[other_start + 1:other_end]
+            var_name = Toml._object_name(full_name)
             other_start_in = other_end + 2
 
             flag = True
             counter = 0
             while flag:
-                other_end = other_end + 2 + obj[other_end + 2:].find('\n\n')
+                other_end = other_end + 2 + obj[other_end + 2:].find('\r')
                 counter += 1
                 if other_end == -1:
                     other_end = len(obj)
                     flag = False
-                elif obj[:other_end].count(f'{var_name}.') < counter:
+                elif obj[:other_end].count(f'[{full_name}.') < counter:
                     flag = False
 
             parsed[var_name] = Toml._object_dict(obj[other_start_in:other_end])
-            obj = obj[:other_start] + obj[other_end + 2:]
+            other_end = other_end + 3 \
+                if other_end + 2 < len(obj) and obj[other_end + 2] == '\n' \
+                else other_end + 2
+            # obj = obj[:other_start] + obj[other_end + 2:]
+            obj = obj[:other_start] + obj[other_end:]
             other_start = obj.find('\n[')
             if other_start != -1:
                 other_start += 1

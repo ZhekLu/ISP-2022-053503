@@ -69,7 +69,6 @@ class TomlTester(unittest.TestCase):
     def test_lambda(self):
         self.s = fc.get_serializer(SERIALIZER_STR)
         old_obj = test_source.simple_lambda
-        print(self.s.dumps(old_obj))
         new_obj = self.s.loads(self.s.dumps(old_obj))
         self.assertEqual(old_obj(5), new_obj(5))
 
@@ -80,15 +79,41 @@ class TomlTester(unittest.TestCase):
         new_obj = self.s.loads(self.s.dumps(old_obj))
         self.assertEqual(old_obj(), new_obj())
 
-    def test_complex_funcs(self):
+    def test_foo_with_args(self):
         self.s = fc.get_serializer(SERIALIZER_STR)
-        for i, f in enumerate(test_funcs.funcs[1:]):
-            old = f
-            new = self.s.loads(self.s.dumps(old))
-            if i > 1:
-                self.assertEqual(new(2), old(2))
-            else:
-                self.assertEqual(new(42, 13), old(42, 13))
+        old_obj = test_funcs.foo_with_args
+        self.s.dump(old_obj, TEST_FILE)
+        new_obj = self.s.loads(self.s.dumps(old_obj))
+        self.assertEqual(old_obj(13, 42), new_obj(13, 42))
+
+    def test_foo_with_def_args(self):
+        self.s = fc.get_serializer(SERIALIZER_STR)
+        old_obj = test_funcs.foo_with_def_args
+        self.s.dump(old_obj, TEST_FILE)
+        new_obj = self.s.loads(self.s.dumps(old_obj))
+        self.assertEqual(old_obj(13, 42), new_obj(13, 42))
+        self.assertEqual(old_obj(13, 42, 33), new_obj(13, 42, 33))
+
+    def test_foo_with_glob(self):
+        self.s = fc.get_serializer(SERIALIZER_STR)
+        old_obj = test_funcs.foo_with_glob
+        self.s.dump(old_obj, TEST_FILE)
+        new_obj = self.s.loads(self.s.dumps(old_obj))
+        self.assertEqual(old_obj(13), new_obj(13))
+
+    def test_foo_with_glob_foo(self):
+        self.s = fc.get_serializer(SERIALIZER_STR)
+        old_obj = test_funcs.foo_with_glob_foo
+        self.s.dump(old_obj, TEST_FILE)
+        new_obj = self.s.loads(self.s.dumps(old_obj))
+        self.assertEqual(old_obj(13), new_obj(13))
+
+    def test_foo_with_vars(self):
+        self.s = fc.get_serializer(SERIALIZER_STR)
+        old_obj = test_funcs.foo_with_vars
+        self.s.dump(old_obj, TEST_FILE)
+        new_obj = self.s.loads(self.s.dumps(old_obj))
+        self.assertEqual(old_obj(3), new_obj(3))
 
     def test_func_with_module(self):
         self.s = fc.get_serializer(SERIALIZER_STR)
@@ -100,6 +125,7 @@ class TomlTester(unittest.TestCase):
     def test_simple_class(self):
         self.s = fc.get_serializer(SERIALIZER_STR)
         old_class = test_source.SimpleClass
+        print(self.s.dumps(old_class))
         new_class = self.s.loads(self.s.dumps(old_class))
         old_obj = old_class()
         new_obj = new_class()

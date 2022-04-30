@@ -78,6 +78,13 @@ class YamlTester(unittest.TestCase):
         new_obj = self.s.loads(self.s.dumps(old_obj))
         self.assertEqual(old_obj(), new_obj())
 
+    def test_foo_with_glob_foo(self):
+        self.s = fc.get_serializer(SERIALIZER_STR)
+        old_obj = test_funcs.foo_with_glob_foo
+        self.s.dump(old_obj, TEST_FILE)
+        new_obj = self.s.loads(self.s.dumps(old_obj))
+        self.assertEqual(old_obj(13), new_obj(13))
+
     def test_complex_funcs(self):
         self.s = fc.get_serializer(SERIALIZER_STR)
         for i, f in enumerate(test_funcs.funcs[1:]):
