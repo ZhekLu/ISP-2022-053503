@@ -1,10 +1,11 @@
-from test.testers import SerializerTester, factory
+from serializer import JSON_STR
+from test.testers import SerializerTester
 import unittest
 
 
 class JsonSerializerTester(SerializerTester):
     TEST_FILE = 'tester_file.json'
-    SERIALIZER_STR = factory.JSON_STR
+    SERIALIZER_STR = JSON_STR
 
 
 if __name__ == '__main__':

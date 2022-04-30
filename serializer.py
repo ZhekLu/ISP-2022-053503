@@ -1,5 +1,5 @@
+from serializer import get_serializer
 import argparse
-import factory
 
 
 def serializer():
@@ -22,8 +22,8 @@ def serializer():
     if source_format == res_format:
         return "Same with source format."
 
-    serializer_source = factory.get_serializer(source_format)
-    serializer_result = factory.get_serializer(res_format)
+    serializer_source = get_serializer(source_format)
+    serializer_result = get_serializer(res_format)
 
     loaded = serializer_source.load(source_file)
     if args.result_file:
