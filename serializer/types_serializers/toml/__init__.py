@@ -80,9 +80,19 @@ class Toml(ISerializer):
         for key, value in obj.items():
             string += Toml._str(value, Toml._str(str(key)), name)
             string += '\n'
-        return string + '\n'
+        if not name_path:
+            string += '\n'
+        return string
 
     # From string
+
+    @staticmethod
+    def _object_name(name: str) -> str:
+        index = name.find('.')
+        while index != -1:
+            name = name[index + 1:]
+            index = name.find('.')
+        return name
 
     @staticmethod
     def _object(obj: str) -> object:
@@ -117,12 +127,22 @@ class Toml(ISerializer):
             if other_start != -1:
                 other_start += 1
         while obj and other_start != -1:
-            other_end = obj.find(']')
-            var_name = obj[other_start + 1:other_end]
-            other_start_in, other_end = other_end + 2, obj.find('\n\n')
+            other_end = other_start + obj[other_start:].find(']')
+            var_name = Toml._object_name(obj[other_start + 1:other_end])
+            other_start_in = other_end + 2
+
+            flag = True
+            counter = 0
+            while flag:
+                other_end = other_end + 2 + obj[other_end + 2:].find('\n\n')
+                counter += 1
+                if other_end == -1:
+                    other_end = len(obj)
+                    flag = False
+                elif obj[:other_end].count(f'{var_name}.') < counter:
+                    flag = False
+
             parsed[var_name] = Toml._object_dict(obj[other_start_in:other_end])
-            if not parsed[var_name]:
-                other_end += 1
             obj = obj[:other_start] + obj[other_end + 2:]
             other_start = obj.find('\n[')
             if other_start != -1:
