@@ -14,7 +14,7 @@ class Yaml(ISerializer):
 
     @staticmethod
     def dump(obj: Any, file: str) -> None:
-        with open(file, 'w') as f:
+        with open(file, 'w+') as f:
             f.write(Yaml.dumps(obj))
 
     # Load methods

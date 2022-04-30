@@ -13,7 +13,7 @@ class Toml(ISerializer):
 
     @staticmethod
     def dump(obj: Any, file: str) -> None:
-        with open(file, 'w') as f:
+        with open(file, 'w+') as f:
             f.write(Toml.dumps(obj))
 
     # Load methods

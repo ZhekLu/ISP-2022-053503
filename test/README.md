@@ -6,12 +6,12 @@ Library: **unittest**
 usage: python -m unittest test.[TesterName]
 
 testers:
-    - Json
-    - Toml
-    - Yaml
+    - json
+    - toml
+    - yaml
 ```
 Usage example:
 ```
-python -m unittest test.Json test.Yaml test.Toml
+python -m unittest test.json test.yaml test.toml
 ```
-It's run all tests
+It runs all tests.

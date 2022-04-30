@@ -13,7 +13,7 @@ class Json(ISerializer):
 
     @staticmethod
     def dump(obj: Any, file) -> None:
-        with open(file, 'w') as f:
+        with open(file, 'w+') as f:
             f.write(Json.dumps(obj))
 
     # Load methods
