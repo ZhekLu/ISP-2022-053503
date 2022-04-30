@@ -14,6 +14,7 @@ jobs:
         python-version: ['3.9.12']
     env:
       working-directory: ./serializer
+      codecov-token: ef5ee370-6104-4971-9197-e62702bf6231
 
     steps:
       - uses: actions/checkout@v2
@@ -38,3 +39,9 @@ jobs:
         working-directory: ${{ env.working-directory }}
         run: |
           python -m unittest test.toml
+      - name: Codecov
+        working-directory: ${{ env.working-directory }}
+        run: |
+          curl -Os https://uploader.codecov.io/latest/linux/codecov
+          chmod +x codecov
+          ./codecov -t ${{ env.codecov-token }}
