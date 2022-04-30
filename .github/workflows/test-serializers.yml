@@ -39,9 +39,9 @@ jobs:
         working-directory: ${{ env.working-directory }}
         run: |
           python -m unittest test.toml
-      - name: Codecov
+      - name: Generate Report
         working-directory: ${{ env.working-directory }}
         run: |
-          curl -Os https://uploader.codecov.io/latest/linux/codecov
-          chmod +x codecov
-          ./codecov -t ${{ env.codecov-token }}
+          coverage run -m unittest test.json test.yaml test.toml
+      - name: Upload
+        uses: codecov/codecov-action@v2
