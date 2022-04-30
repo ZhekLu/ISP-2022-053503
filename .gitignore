@@ -1,5 +1,6 @@
 .idea
 __pycache__
+venv
 test.*
 tester_file.*
 todo.txt
