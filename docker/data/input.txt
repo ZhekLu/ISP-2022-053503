@@ -1,0 +1,6 @@
+input text:
+Simple sentence.
+Another one, with some: delimiters;
+Same...
+Sentence without end
+But with \n
