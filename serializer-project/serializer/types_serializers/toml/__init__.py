@@ -7,25 +7,13 @@ class Toml(ISerializer):
 
     # Dump methods
 
-    @staticmethod
-    def dumps(obj: Any) -> str:
+    def dumps(self, obj: Any) -> str:
         return Toml._str(packer.pack(obj))
-
-    @staticmethod
-    def dump(obj: Any, file: str) -> None:
-        with open(file, 'w+') as f:
-            f.write(Toml.dumps(obj))
 
     # Load methods
 
-    @staticmethod
-    def loads(s: str) -> Any:
+    def loads(self, s: str) -> Any:
         return packer.unpack(Toml._object(s))
-
-    @staticmethod
-    def load(file: str) -> Any:
-        with open(file, 'r') as f:
-            return Toml.loads(f.read())
 
     # Additional methods
 

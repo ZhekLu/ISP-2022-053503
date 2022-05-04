@@ -7,25 +7,13 @@ class Json(ISerializer):
 
     # Dump methods
 
-    @staticmethod
-    def dumps(obj: Any) -> str:
-        return Json._str(packer.pack(obj))
-
-    @staticmethod
-    def dump(obj: Any, file) -> None:
-        with open(file, 'w+') as f:
-            f.write(Json.dumps(obj))
+    def dumps(self, obj: Any) -> str:
+        return self._str(packer.pack(obj))
 
     # Load methods
 
-    @staticmethod
-    def loads(s: str) -> Any:
-        return packer.unpack(Json._object(s))
-
-    @staticmethod
-    def load(file: str) -> Any:
-        with open(file, 'r') as f:
-            return Json.loads(f.read())
+    def loads(self, s: str) -> Any:
+        return packer.unpack(Json._object())
 
     # Additional methods
 
@@ -34,11 +22,11 @@ class Json(ISerializer):
     @staticmethod
     def _str(obj: Any, name: str = '') -> str:
         if packer.is_primitive(obj):
-            return Json._str_primitive(obj, name)
+            return Json._str_primitive(name)
         if packer.is_iterable(obj):
-            return Json._str_dict(obj, name) \
+            return Json._str_dict(name) \
                 if isinstance(obj, dict) \
-                else Json._str_collection(obj, name)
+                else Json._str_collection(name)
 
     @staticmethod
     def _str_primitive(obj: object, name: str) -> str:
@@ -63,7 +51,7 @@ class Json(ISerializer):
         string += '['
         # string += f'["__{type(obj).__name__}__", '
         for i in range(len(obj)):
-            string += Json._str(obj[i])
+            string += Json._str()
             if i < len(obj) - 1:
                 string += ', '
         return string + ']'
@@ -76,7 +64,7 @@ class Json(ISerializer):
         string += '{'
 
         for i, (key, value) in enumerate(obj.items()):
-            string += Json._str(value, Json._str(str(key)))
+            string += Json._str(Json._str())
             if i < len(obj) - 1:
                 string += ', '
         return string + '}'
@@ -89,6 +77,6 @@ class Json(ISerializer):
 
     @staticmethod
     def _object(obj: str) -> object:
-        return eval(Json._process(obj)) \
+        return eval(Json._process()) \
             if obj \
             else None

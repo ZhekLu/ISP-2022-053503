@@ -28,16 +28,3 @@ class ComplexClass:
 
     def func_with_glob(self):
         return "local_str" + str_glob + str(self.const)
-
-
-class TestClass:
-    stat_var = 13
-
-    def __init__(self, a):
-        self.var = a
-
-    def __private_method(self):
-        self.var += 1
-
-    def method(self):
-        return 13 + self.var
