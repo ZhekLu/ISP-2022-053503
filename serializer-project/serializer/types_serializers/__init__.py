@@ -3,19 +3,17 @@ from typing import Any
 
 class ISerializer:
 
-    @staticmethod
-    def dump(obj: Any, file: str) -> None:
-        ...
+    def dump(self, obj: Any, file: str) -> None:
+        with open(file, 'w+') as f:
+            f.write(self.dumps(obj))
     # TODO!: dump for all
 
-    @staticmethod
-    def dumps(obj: Any) -> str:
+    def dumps(self, obj: Any) -> str:
         ...
 
-    @staticmethod
-    def load(file: str) -> Any:
-        ...
+    def load(self, file: str) -> Any:
+        with open(file, 'r') as f:
+            return self.loads(f.read())
 
-    @staticmethod
-    def loads(s: str) -> Any:
+    def loads(self, s: str) -> Any:
         ...

@@ -7,25 +7,13 @@ class Json(ISerializer):
 
     # Dump methods
 
-    @staticmethod
-    def dumps(obj: Any) -> str:
-        return Json._str(packer.pack(obj))
-
-    @staticmethod
-    def dump(obj: Any, file) -> None:
-        with open(file, 'w+') as f:
-            f.write(Json.dumps(obj))
+    def dumps(self, obj: Any) -> str:
+        return self._str(packer.pack(obj))
 
     # Load methods
 
-    @staticmethod
-    def loads(s: str) -> Any:
+    def loads(self, s: str) -> Any:
         return packer.unpack(Json._object(s))
-
-    @staticmethod
-    def load(file: str) -> Any:
-        with open(file, 'r') as f:
-            return Json.loads(f.read())
 
     # Additional methods
 

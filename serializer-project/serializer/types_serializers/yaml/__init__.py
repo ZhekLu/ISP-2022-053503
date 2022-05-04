@@ -8,25 +8,13 @@ class Yaml(ISerializer):
 
     # Dump methods
 
-    @staticmethod
-    def dumps(obj: Any) -> str:
+    def dumps(self, obj: Any) -> str:
         return Yaml._str(packer.pack(obj))
-
-    @staticmethod
-    def dump(obj: Any, file: str) -> None:
-        with open(file, 'w+') as f:
-            f.write(Yaml.dumps(obj))
 
     # Load methods
 
-    @staticmethod
-    def loads(s: str) -> Any:
+    def loads(self, s: str) -> Any:
         return packer.unpack(Yaml._object(s))
-
-    @staticmethod
-    def load(file: str) -> Any:
-        with open(file, 'r') as f:
-            return Yaml.loads(f.read())
 
     # Additional methods
 
