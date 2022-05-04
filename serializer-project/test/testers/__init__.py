@@ -120,6 +120,13 @@ class SerializerTester(unittest.TestCase):
         new_obj = self.s.loads(self.s.dumps(old_obj))
         self.assertEqual(old_obj(13), new_obj(13))
 
+    def test_func_with_nested(self):
+        self.s = get_serializer(self.SERIALIZER_STR)
+        old_obj = test_funcs.foo_with_nested
+        self.s.dump(old_obj, self.TEST_FILE)
+        new_obj = self.s.loads(self.s.dumps(old_obj))
+        self.assertEqual(old_obj(), new_obj())
+
     def test_simple_class(self):
         self.s = get_serializer(self.SERIALIZER_STR)
         old_class = test_source.SimpleClass

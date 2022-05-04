@@ -21,11 +21,11 @@ def foo_with_glob_foo(a):
     return foo_with_glob(a)
 
 
-# TODO; for this type
-def foo_with_nested_foo(arg):
-    def foo(b):
-        return b + arg
-    return foo(12)
+# # TODO; for this type
+# def foo_with_nested_foo(arg):
+#     def foo(b):
+#         return b + arg
+#     return foo(12)
 
 
 def foo_with_nested():
